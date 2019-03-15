@@ -1,0 +1,50 @@
+name: dlcd
+description: DLCD
+metadata_type: slim
+
+metadata:
+  product_type: dlcd
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: uint8
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 8000.0
+    y: 8000.0
+  driver: GeoTIFF
+---
+
+name: esl
+description: Environmentally Sensitive Land
+metadata_type: slim
+
+metadata:
+  product_type: esl
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
