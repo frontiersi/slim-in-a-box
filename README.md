@@ -5,7 +5,7 @@
 * `epi`: 
   * Environmentally Sensitive Land
   * Flood
-  * Future Redisnetial Growth Area 
+  * Future Residential Growth Area 
   * Heritage
 * `soil`:
   * Acid

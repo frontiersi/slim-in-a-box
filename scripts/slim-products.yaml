@@ -48,3 +48,420 @@ storage:
     x: 6241.0
     y: 7437.0
   driver: GeoTIFF
+---
+
+name: flood
+description: Flood
+metadata_type: slim
+
+metadata:
+  product_type: flood
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: frga
+description: Future Residential Growth Area
+metadata_type: slim
+
+metadata:
+  product_type: frga
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: her
+description: Heritage
+metadata_type: slim
+
+metadata:
+  product_type: her
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: acid
+description: Acid Soil
+metadata_type: slim
+
+metadata:
+  product_type: acid
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: lsc_overmod
+description: SOil LSC Overmod
+metadata_type: slim
+
+metadata:
+  product_type: lsc_overmod
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: mass
+description: Soil Mass m
+metadata_type: slim
+
+metadata:
+  product_type: mass
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: salinity
+description: Soil Salinity
+metadata_type: slim
+
+metadata:
+  product_type: salinity
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: shallow_rock
+description: Soil Shallow Rock
+metadata_type: slim
+
+metadata:
+  product_type: shallow_rock
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: structure
+description: Soil Structure
+metadata_type: slim
+
+metadata:
+  product_type: structure
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: water
+description: Soil Water
+metadata_type: slim
+
+metadata:
+  product_type: water
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: waterlog
+description: Soil Water Log
+metadata_type: slim
+
+metadata:
+  product_type: waterlog
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: wind_erosion
+description: Soil Wind Erosion
+metadata_type: slim
+
+metadata:
+  product_type: wind_erosion
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: int16
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: rail
+description: Railway Station Proximity
+metadata_type: slim
+
+metadata:
+  product_type: rail
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: float32
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: road
+description: Road proximity
+metadata_type: slim
+
+metadata:
+  product_type: road
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: float32
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 6241.0
+    y: 7437.0
+  driver: GeoTIFF
+---
+
+name: valuation
+description: Valuation
+metadata_type: slim
+
+metadata:
+  product_type: valuation
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: float32
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 8000.0
+    y: 8000.0
+  driver: GeoTIFF
+
+---
+
+name: valuation_pa
+description: Valuation PA
+metadata_type: slim
+
+metadata:
+  product_type: valuation_pa
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: float32
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 20
+    y: -20
+  tile_size:
+    x: 8000.0
+    y: 8000.0
+  driver: GeoTIFF
