@@ -1,5 +1,19 @@
 # SLIM notes
 
+## Getting started
+
+1. Run the docker-compose workspace with `make up` or `docker-compose up`
+2. Initialise the Open Data Cube database with `make initdb` (or see the Makefile for the command)
+3. Add metadata with `make add-metadata`
+4. Add product definitions with `make add-products`
+5. Index data (needs AWS creds):
+    * `make index-dlcd`
+    * `make index-epi`
+    * `make index-soil`
+    * `make index-transport`
+    * `make index-valuation`
+    * `make index-valuation-pa`.
+
 ## Products
 * `dlcd`: 
 * `epi`: 
@@ -27,41 +41,3 @@
   * Valuation 2016
   * Valuation 2017
   * Valuation pa 2013-17
-
-
-
-
-# Cube in a Box
-The Cube in a Box is a simple way to run the [Open Data Cube](https://opendatacube.com).
- 
-# How to use:
-_If you have `make` installed you can use it to save some typing using the instructions a little further down._
-
-All you need to know:
- * Set environment variables for `ODC_ACCESS_KEY` and `ODC_SECRET_KEY` to something valid with your AWS account credentials.
- * Start a local environment: `docker-compose up`
- * Set up your local postgres database (after the above has finished) using:
-   * `docker-compose exec jupyter datacube -v system init`
-   * `docker-compose exec jupyter datacube product add /opt/odc/docs/config_samples/dataset_types/ls_usgs.yaml`
- * Before indexing Landsat 8, you need to grab the pathrows index. Download the file from [here](https://landsat.usgs.gov/sites/default/files/documents/WRS2_descending.zip) and save the zip file to `data/wrs2_descending.zip`
- * Index a default region with either:
-   * `docker-compose exec jupyter bash -c "cd /opt/odc/scripts && python3 ./autoIndex.py -p '/opt/odc/data/wrs2_descending.zip' -e '146.30,146.83,-43.54,-43.20'"`
-   * `docker-compose exec jupyter bash -c "cd /opt/odc/scripts && python3 ./autoIndex.py -p '/opt/odc/data/wrs2_descending.zip' -e '146.30,146.83,-43.54,-43.20' --start_date '2018-01-01' --end_date '2018-10-09'"`
- * View the Jupyter notebook at [http://localhost](http://localhost) using the password `secretpassword`
- * Shutdown your local environment:
-   * `docker-compose down`
-
-If you have `make`:
- * Set environment variables for `ODC_ACCESS_KEY` and `ODC_SECRET_KEY` to something valid with your AWS account credentials.
- * Start a local environment using `make up`
- * Set up your local postgres database (after the above has finished) using `make initdb`
- * Before indexing Landsat 8, you need to grab the pathrows index using `make download-pathrows-file`
- * Index a default region with `make index` 
-    * Edit the Makefile to change the region of interest
- * View the Jupyter notebook at [http://localhost](http://localhost) using the password `secretpassword`
-
-# IMPORTANT NOTES
-In your local environment, in order to be able to get data from S3, you need to ensure that the environment variables `ODC_ACCESS_KEY` and `ODC_SECRET_KEY` are set to something valid. If using AWS, these parameters are automatically included.
-
-## Environment variables for Docker Compose
-Environment variables can be set in a .env file for Docker Compose. You might use [.env.example](./.env.example) as a starting point.
