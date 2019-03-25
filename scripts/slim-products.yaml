@@ -10,7 +10,7 @@ metadata:
 measurements:
   - name: band1
     dtype: uint8
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -36,7 +36,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -62,7 +62,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -88,7 +88,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -114,7 +114,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -140,7 +140,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -166,7 +166,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -192,7 +192,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -218,7 +218,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -244,7 +244,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -270,7 +270,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -296,7 +296,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -322,7 +322,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -348,7 +348,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -374,7 +374,7 @@ metadata:
 measurements:
   - name: band1
     dtype: float32
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -400,7 +400,7 @@ metadata:
 measurements:
   - name: band1
     dtype: float32
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -426,7 +426,7 @@ metadata:
 measurements:
   - name: band1
     dtype: float32
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
@@ -453,7 +453,7 @@ metadata:
 measurements:
   - name: band1
     dtype: float32
-    nodata: 0
+    nodata: NaN
     units: '1'
 
 storage:
