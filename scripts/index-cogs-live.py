@@ -29,6 +29,7 @@ OVERWRITE = True
 
 year_re = re.compile(r'([2][0-9]{3})')
 
+
 def get_matching_s3_keys(bucket, prefix='', suffix=''):
     """
     Generate the keys in an S3 bucket.
@@ -55,6 +56,7 @@ def get_matching_s3_keys(bucket, prefix='', suffix=''):
             kwargs['ContinuationToken'] = resp['NextContinuationToken']
         except KeyError:
             break
+
 
 def build_metadata(bucket, file_path, product_type):
     s3_path_template = "s3://{bucket}/{file}"
@@ -83,7 +85,7 @@ def build_metadata(bucket, file_path, product_type):
         from_date = datetime.datetime(year=int(dates[0]), month=1, day=1)
         if len(dates) > 1:
             to_date = datetime.datetime(year=int(dates[1]), month=1, day=1)
-    
+
     centre_date = from_date
 
     # Handle coordinates
@@ -160,7 +162,7 @@ def index_dataset(dataset_dict, s3_path):
     dc = datacube.Datacube()
     index = dc.index
     resolver = Doc2Dataset(index)
-    dataset, err  = resolver(dataset_dict, s3_path)
+    dataset, err = resolver(dataset_dict, s3_path)
     if err is not None:
         logging.error("%s", err)
     else:
@@ -175,11 +177,13 @@ def index_dataset(dataset_dict, s3_path):
     return dataset, err
 
 
-@click.command(help= "Enter Bucket name and other parameters")
+@click.command(help="Enter Bucket name and other parameters")
 @click.argument('bucket')
-@click.option('--path', '-p', help="Pass the prefix of the object to the bucket")
+@click.option(
+    '--path', '-p', help="Pass the prefix of the object to the bucket")
 @click.option('--extension', '-e', help="Pass extension to filter on")
-@click.option('--product_type', '-t', help="The product type, or name for the product")
+@click.option(
+    '--product_type', '-t', help="The product type, or name for the product")
 def do_work(bucket, path, extension, product_type):
     count = 0
     limit = None
@@ -188,7 +192,8 @@ def do_work(bucket, path, extension, product_type):
 
     for s3_path in files:
         if limit and count >= limit:
-            logging.warning("Finished processing {}, which is the limit".format(count))
+            logging.warning(
+                "Finished processing {}, which is the limit".format(count))
             return
         logging.info("Working on {}".format(s3_path))
 
@@ -196,6 +201,7 @@ def do_work(bucket, path, extension, product_type):
 
         index_dataset(dataset_dict, s3_path)
         count += 1
+
 
 if __name__ == "__main__":
     logging.info("Script is starting up")
