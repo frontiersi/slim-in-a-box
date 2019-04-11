@@ -81,10 +81,12 @@ def build_metadata(bucket, file_path, product_type):
     from_date = datetime.datetime(year=int(year), month=1, day=1)
     to_date = from_date
 
-    if len(dates) > 0:
+    if len(dates) > 1:
         from_date = datetime.datetime(year=int(dates[0]), month=1, day=1)
-        if len(dates) > 1:
-            to_date = datetime.datetime(year=int(dates[1]), month=1, day=1)
+        to_date = datetime.datetime(year=int(dates[1]), month=1, day=1)
+    elif len(dates) > 0:
+        from_date = datetime.datetime(year=int(dates[0]), month=1, day=1)
+        to_date = from_date
 
     centre_date = from_date
 
