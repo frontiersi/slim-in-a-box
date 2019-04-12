@@ -140,7 +140,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -166,7 +166,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -192,7 +192,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -218,7 +218,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -244,7 +244,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -270,7 +270,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -296,7 +296,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -322,7 +322,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
@@ -348,7 +348,7 @@ metadata:
 measurements:
   - name: band1
     dtype: int16
-    nodata: NaN
+    nodata: 0
     units: '1'
 
 storage:
