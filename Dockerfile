@@ -10,4 +10,4 @@ USER $NB_UID
 
 WORKDIR /notebooks
 
-CMD jupyter notebook
+CMD jupyter notebook --no-browser --ip="0.0.0.0" --NotebookApp.token='secretpassword'
