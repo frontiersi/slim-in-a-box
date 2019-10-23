@@ -74,12 +74,14 @@ def do_work(bucket, path, extension, product_type):
 
         # Extract bounds and crs
         bounds = raster.bounds
-        crs_code = raster.crs.to_wkt()
+        crs_string = raster.crs.to_wkt()
 
         # hardcode date
         to_date = datetime.datetime(year=2018, month=1, day=1)
         from_date = datetime.datetime(year=2018, month=1, day=1)
         centre_date = datetime.datetime(year=2018, month=1, day=1)
+
+        print (to_date)
 
         # Handle coordinates
         top = bounds.top
@@ -87,7 +89,7 @@ def do_work(bucket, path, extension, product_type):
         right = bounds.right
         left = bounds.left
 
-        inProj = Proj(CRS.from_string(crs_code))
+        inProj = Proj(CRS.from_string(crs_string))
         outProj = Proj(init='epsg:4326')
         left_ll, bottom_ll = transform(inProj, outProj, left, bottom)
         right_ll, top_ll = transform(inProj, outProj, right, top)
@@ -116,6 +118,7 @@ def do_work(bucket, path, extension, product_type):
                 {'x': left, 'y': bottom}
         }
 
+        # Build a dataset dictionary
         docdict = {
             'id': str(uuid.uuid5(uuid.NAMESPACE_URL, s3_path)),
             'product_type': product_type,
@@ -138,7 +141,7 @@ def do_work(bucket, path, extension, product_type):
             'image': {
                 'bands': {
                     'band1': {
-                        'path': s3_path,
+                        'path': full_path,
                         'layer': 1,
                     }
                 }
@@ -146,19 +149,22 @@ def do_work(bucket, path, extension, product_type):
 
             'lineage': {'source_datasets': {}}
         }
-
-        print (docdict)
-    # for s3_path in files:
-    #     if limit and count >= limit:
-    #         logging.warning(
-    #             "Finished processing {}, which is the limit".format(count))
-    #         return
-    #     logging.info("Working on {}".format(s3_path))
-    #
-    #     dataset_dict = build_metadata(bucket, s3_path, product_type)
-    #
-    #     index_dataset(dataset_dict, s3_path)
-    #     count += 1
+        
+        # Now index into the Datacube postgres DB
+        dc = datacube.Datacube()
+        index = dc.index
+        resolver = Doc2Dataset(index)
+        dataset, err = resolver(docdict, full_path)
+        if err is not None:
+            logging.error("%s", err)
+        else:
+            try:
+                index.datasets.add(dataset)
+            except changes.DocumentMismatchError as e:
+                index.datasets.update(dataset, {tuple(): changes.allow_any})
+            except Exception as e:
+                err = e
+                logging.error("Unhandled exception {}".format(e))
 
 if __name__ == "__main__":
     logging.info("Script is starting up")
