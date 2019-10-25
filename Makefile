@@ -30,9 +30,9 @@ get-sample-data:
 create: initdb add-metadata add-products
 
 add-metadata:
-		docker-compose exec jupyter \
-			datacube metadata_type add \
-			/opt/odc/scripts/slim-metadata.yaml
+	docker-compose exec jupyter \
+		datacube metadata add \
+		/opt/odc/scripts/slim-metadata.yaml
 
 add-products:
 	docker-compose exec jupyter \
