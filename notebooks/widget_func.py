@@ -17,6 +17,7 @@ import xarray as xr
 from IPython.display import display
 import warnings
 import ipywidgets as widgets
+import numpy as np
 
 def transform_from_wgs_poly(geo_json,EPSGa):
 
@@ -33,7 +34,7 @@ def transform_from_wgs_poly(geo_json,EPSGa):
 
     return eval(polygon.ExportToJson())
 
-def run_valuation_app():
+def run_valuation_app(ds):
     """
     Description of function to come
     """
@@ -67,8 +68,8 @@ def run_valuation_app():
                     [149.6776794, -29.764141],
                     [149.6776794, -29.8407056],
                     [149.7652267, -29.8407056],
-                    [149.7662567, -29.7644391],
-                    [149.678366, -29.7644391]
+                    [149.7652267, -29.764141],
+                    [149.6776794, -29.764141]
                 ]
             ]
         }
@@ -82,7 +83,7 @@ def run_valuation_app():
         loadeddata_geometry.Centroid().GetY(),
         loadeddata_geometry.Centroid().GetX()
     ]
-    loadeddata_zoom = 14
+    loadeddata_zoom = 12
 
     # define the study area map
     studyarea_map = Map(
@@ -126,10 +127,6 @@ def run_valuation_app():
         # Execute behaviour based on what the user draws
         if geo_json['geometry']['type'] == 'Polygon':
 
-            info.clear_output(wait=True)  # wait=True reduces flicker effect
-            with info:
-                print("Plot status: polygon sucessfully added to plot.")
-
             # Convert the drawn geometry to pixel coordinates
             geom_selectedarea = transform_from_wgs_poly(
                 geo_json['geometry'],
@@ -144,6 +141,9 @@ def run_valuation_app():
                 all_touched=False,
                 invert=True
             )
+            
+            masked_ds = ds.band1.where(mask)
+            pixel_count = masked_ds.count()
 
             colour = colour_list[polygon_number % len(colour_list)]
 
@@ -160,6 +160,10 @@ def run_valuation_app():
                     }
                 )
             )
+            
+            info.clear_output(wait=True)  # wait=True reduces flicker effect
+            with info:
+                print(f"number of pixels in mask = {pixel_count}")
 
             # Iterate the polygon number before drawing another polygon
             polygon_number = polygon_number + 1
@@ -167,7 +171,8 @@ def run_valuation_app():
         else:
             info.clear_output(wait=True)
             with info:
-                print(f"Mask = {mask}")
+                print("Plot status: this drawing tool is not currently "
+                      "supported. Please use the polygon tool.")
 
     # call to say activate handle_draw function on draw
     studyarea_drawctrl.on_draw(handle_draw)
