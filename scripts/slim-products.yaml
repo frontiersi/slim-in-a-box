@@ -465,3 +465,29 @@ storage:
     x: 8000.0
     y: 8000.0
   driver: GeoTIFF
+
+---
+
+name: dem
+description: Digital elevation model, 5m
+metadata_type: slim
+
+metadata:
+  product_type: dem
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: float32
+    nodata: -9999
+    units: '1'
+
+storage:
+  resolution:
+    x: 5
+    y: -5
+  tile_size:
+    x: 401.0
+    y: 401.0
+  driver: GeoTIFF
