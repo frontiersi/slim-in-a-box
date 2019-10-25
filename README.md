@@ -16,9 +16,12 @@
     * `make index-soil`
     * `make index-transport`
     * `make index-valuation`
-    * `make index-valuation-pa`.
+    * `make index-valuation-pa`
+    * `make index-dem`
 
 ## Products
+* `dem`:
+  * NSW digital elevation model (5m state wide)
 * `dlcd`:
 * `epi`:
   * Environmentally Sensitive Land
