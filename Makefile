@@ -170,3 +170,8 @@ index-valuation-pa:
 			-p slim-odc-datasets/valuation_pa/ \
 			-e tif \
 			-t valuation_pa"
+
+index-dem:
+	docker-compose exec jupyter bash -c \
+		"cd /opt/odc/scripts && python3 index-dem.py"
+
