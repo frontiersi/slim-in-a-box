@@ -180,7 +180,7 @@ index-dlcdnsw:
 	docker-compose exec jupyter bash -c \
 		"cd /opt/odc/scripts && python3 index-cogs-live.py \
 			test.data.frontiersi.io \
-			-p sslim-odc-datasets/dlcd-nsw \
+			-p slim-odc-datasets/dlcd-nsw \
 			-e tif \
 			-t dlcdnsw"
 
