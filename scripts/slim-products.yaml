@@ -465,7 +465,6 @@ storage:
     x: 8000.0
     y: 8000.0
   driver: GeoTIFF
-
 ---
 
 name: dem
@@ -490,4 +489,30 @@ storage:
   tile_size:
     x: 401.0
     y: 401.0
+  driver: GeoTIFF
+---
+
+name: dlcdnsw
+description: NSW DLCD
+metadata_type: slim
+
+metadata:
+  product_type: dlcdnsw
+  format:
+    name: GeoTIFF
+
+measurements:
+  - name: band1
+    dtype: uint8
+    nodata: 0
+    units: '1'
+
+storage:
+  crs: EPSG:3308
+  resolution:
+    x: 100
+    y: -1000
+  tile_size:
+    x: 8000.0
+    y: 8000.0
   driver: GeoTIFF
