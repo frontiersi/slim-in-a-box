@@ -32,9 +32,9 @@ def transform_from_wgs_poly(geo_json,EPSGa):
     transform = osr.CoordinateTransformation(source, target)
     polygon.Transform(transform)
 
-    return eval(polygon.ExportToJson())
+    return polygon, eval(polygon.ExportToJson())
 
-def run_valuation_app(ds):
+def run_valuation_app():
     """
     Description of function to come
     """
@@ -43,53 +43,21 @@ def run_valuation_app(ds):
 
     # Update plotting functionality through rcParams
     mpl.rcParams.update({'figure.autolayout': True})
+    
+    #Start the datacube
+    dc = datacube.Datacube(app='dem')
 
-    # Define the bounding box that will be overlayed on the interactive map
-    # The bounds are hard-coded to match those from the loaded data
-    geom_obj = {
-        "type": "Feature",
-        "properties": {
-            "style": {
-                "stroke": True,
-                "color": 'red',
-                "weight": 4,
-                "opacity": 0.8,
-                "fill": True,
-                "fillColor": False,
-                "fillOpacity": 0,
-                "showArea": True,
-                "clickable": True
-            }
-        },
-        "geometry": {
-            "type": "Polygon",
-            "coordinates": [
-                [
-                    [149.6776794, -29.764141],
-                    [149.6776794, -29.8407056],
-                    [149.7652267, -29.8407056],
-                    [149.7652267, -29.764141],
-                    [149.6776794, -29.764141]
-                ]
-            ]
-        }
-    }
-
-    # Create a map geometry from the geom_obj dictionary
+    # Set the parameters to load the backgroun map
     # center specifies where the background map view should focus on
     # zoom specifies how zoomed in the background map should be
-    loadeddata_geometry = ogr.CreateGeometryFromJson(str(geom_obj['geometry']))
-    loadeddata_center = [
-        loadeddata_geometry.Centroid().GetY(),
-        loadeddata_geometry.Centroid().GetX()
-    ]
-    loadeddata_zoom = 12
+    loadeddata_center = [-31.840233, 145.612793]
+    loadeddata_zoom = 5
 
-    # define the study area map
+    # define the background map
     studyarea_map = Map(
         center=loadeddata_center,
         zoom=loadeddata_zoom,
-        basemap=basemaps.Esri.WorldImagery
+        basemap=basemaps.OpenStreetMap.Mapnik
     )
 
     # define the drawing controls
@@ -103,7 +71,7 @@ def run_valuation_app(ds):
 
     # add drawing controls and data bound geometry to the map
     studyarea_map.add_control(studyarea_drawctrl)
-    studyarea_map.add_layer(GeoJSON(data=geom_obj))
+    #studyarea_map.add_layer(GeoJSON(data=geom_obj))
 
     # Index to count drawn polygons
     polygon_number = 0
@@ -128,21 +96,41 @@ def run_valuation_app(ds):
         if geo_json['geometry']['type'] == 'Polygon':
 
             # Convert the drawn geometry to pixel coordinates
-            geom_selectedarea = transform_from_wgs_poly(
+            geom_selectedarea_flat, geom_selectedarea = transform_from_wgs_poly(
                 geo_json['geometry'],
                 EPSGa=3577  # hard-coded to be same as case-study data
             )
+            
+            geom_envelope = geom_selectedarea_flat.GetEnvelope()
+            minX, maxX, minY, maxY = geom_envelope
+            
+            # Insert dc.load for dem and dlcdnsw
+            x_range = (minX, maxX)
+            y_range = (minY, maxY)
+            inputcrs = "EPSG:3577"
+            resolution = (-5, 5)
+            
+            ds_dem = dc.load(
+                product='dem',
+                x=x_range,
+                y=y_range,
+                crs=inputcrs,
+                output_crs=inputcrs,
+                resolution=resolution,
+                dask_chunks={'time': 1}
+            )
+
 
             # Construct a mask to only select pixels within the drawn polygon
             mask = features.geometry_mask(
                 [geom_selectedarea for geoms in [geom_selectedarea]],
-                out_shape=ds.geobox.shape,
-                transform=ds.geobox.affine,
+                out_shape=ds_dem.geobox.shape,
+                transform=ds_dem.geobox.affine,
                 all_touched=False,
                 invert=True
             )
             
-            masked_ds = ds.band1.where(mask)
+            masked_ds = ds_dem.band1.where(mask)
             pixel_count = masked_ds.count()
 
             colour = colour_list[polygon_number % len(colour_list)]
@@ -163,7 +151,8 @@ def run_valuation_app(ds):
             
             info.clear_output(wait=True)  # wait=True reduces flicker effect
             with info:
-                print(f"number of pixels in mask = {pixel_count}")
+                print(ds_dem)
+                print(masked_ds)
 
             # Iterate the polygon number before drawing another polygon
             polygon_number = polygon_number + 1
