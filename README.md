@@ -18,11 +18,15 @@
     * `make index-valuation`
     * `make index-valuation-pa`
     * `make index-dem`
+    * `make index-dlcdnsw`
 
 ## Products
 * `dem`:
   * NSW digital elevation model (5m state wide)
 * `dlcd`:
+  * Dynamic Land Cover Dataset Sydney only
+* `dlcdnsw`:
+  * Dynamic Land Cover Dataset whole of NSW 
 * `epi`:
   * Environmentally Sensitive Land
   * Flood
