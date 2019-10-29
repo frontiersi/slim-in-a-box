@@ -18,6 +18,7 @@ from IPython.display import display
 import warnings
 import ipywidgets as widgets
 import numpy as np
+import pandas as pd
 
 def transform_from_wgs_poly(geo_json,EPSGa):
 
@@ -50,8 +51,8 @@ def run_valuation_app():
     # Set the parameters to load the backgroun map
     # center specifies where the background map view should focus on
     # zoom specifies how zoomed in the background map should be
-    loadeddata_center = [-31.840233, 145.612793]
-    loadeddata_zoom = 5
+    loadeddata_center = [-33.419474, 149.577299]
+    loadeddata_zoom = 12
 
     # define the background map
     studyarea_map = Map(
@@ -85,6 +86,14 @@ def run_valuation_app():
     info = widgets.Output(layout={'border': '1px solid black'})
     with info:
         print("Plot status:")
+        
+    fig_display = widgets.Output(layout=widgets.Layout(
+        width="50%",  # proportion of horizontal space taken by plot
+    ))
+
+    with fig_display:
+        plt.ioff()
+        fig, ax = plt.subplots(figsize=(8, 6))
 
     colour_list = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
@@ -108,7 +117,8 @@ def run_valuation_app():
             x_range = (minX, maxX)
             y_range = (minY, maxY)
             inputcrs = "EPSG:3577"
-            resolution = (-5, 5)
+            dem_res = (-5, 5)
+            dlcd_res = (-100, 100)
             
             ds_dem = dc.load(
                 product='dem',
@@ -116,13 +126,25 @@ def run_valuation_app():
                 y=y_range,
                 crs=inputcrs,
                 output_crs=inputcrs,
-                resolution=resolution,
+                resolution=dem_res,
                 dask_chunks={'time': 1}
             )
-
-
+            
+            ds_dlcd = dc.load(
+                product='dlcdnsw',
+                x=x_range,
+                y=y_range,
+                crs=inputcrs,
+                output_crs=inputcrs,
+                resolution=dlcd_res,
+                dask_chunks={'time': 1}
+            )
+            
+            # Load DLCD land cover look-up table
+            dlcd_lookup = pd.read_csv("dlcd.csv")
+            
             # Construct a mask to only select pixels within the drawn polygon
-            mask = features.geometry_mask(
+            mask_dem = features.geometry_mask(
                 [geom_selectedarea for geoms in [geom_selectedarea]],
                 out_shape=ds_dem.geobox.shape,
                 transform=ds_dem.geobox.affine,
@@ -130,9 +152,36 @@ def run_valuation_app():
                 invert=True
             )
             
-            masked_ds = ds_dem.band1.where(mask)
-            pixel_count = masked_ds.count()
-
+            mask_dlcd = features.geometry_mask(
+                [geom_selectedarea for geoms in [geom_selectedarea]],
+                out_shape=ds_dlcd.geobox.shape,
+                transform=ds_dlcd.geobox.affine,
+                all_touched=False,
+                invert=True
+            )
+            
+            
+            # Apply the mask to the loaded data
+            masked_dem = ds_dem.band1.where(mask_dem)
+            masked_dlcd = ds_dlcd.band1.where(mask_dlcd)
+            
+            # Compute the total number of pixels in the masked data set
+            pix_dem = masked_dem.count().compute().item()
+            pix_dlcd = masked_dlcd.count().compute().item()
+            
+            # Convert dlcd to pandas and get value counts for each class
+            pd_dlcd = ds_dlcd.to_dataframe()
+            pd_dlcd_classcount = pd_dlcd.band1.value_counts().reset_index(name='counts')
+            
+            # Join dlcd counts against landcover look up table
+            pd_dlcd_coverage = pd.merge(pd_dlcd_classcount, dlcd_lookup, how="left", left_on=['index'], right_on=['id'])
+            
+            # Format the counts table to keep necessary items
+            pd_dlcd_coverage['area(km^2)'] = pd_dlcd_coverage['counts'] * (dlcd_res[1]/1000.)**2
+            pd_dlcd_coverage['percentage_area'] = pd_dlcd_coverage['counts']/pd_dlcd_coverage['counts'].sum()*100
+            
+            pd_dlcd_output = pd_dlcd_coverage[['Name', 'area(km^2)', 'percentage_area']]
+            
             colour = colour_list[polygon_number % len(colour_list)]
 
             # Add a layer to the map to make the most recently drawn polygon
@@ -149,10 +198,20 @@ def run_valuation_app():
                 )
             )
             
+            # Make the DLDC Summary plot
+            ax.clear()
+            pd_dlcd_output.plot.bar(x='Name', y='percentage_area', rot=45, ax=ax, legend=False, color=colour)
+            ax.set_xlabel("Land Cover Class")
+            ax.set_ylabel("Percentage Coverage Of Polygon")
+            
+            # refresh display
+            fig_display.clear_output(wait=True)  # wait=True reduces flicker effect
+            with fig_display:
+                display(fig)
+            
             info.clear_output(wait=True)  # wait=True reduces flicker effect
             with info:
-                print(ds_dem)
-                print(masked_ds)
+                print(pd_dlcd_output)
 
             # Iterate the polygon number before drawing another polygon
             polygon_number = polygon_number + 1
@@ -165,6 +224,10 @@ def run_valuation_app():
 
     # call to say activate handle_draw function on draw
     studyarea_drawctrl.on_draw(handle_draw)
+    
+    with fig_display:
+        # TODO: update with user friendly something
+        display(widgets.HTML(""))
 
     # Construct UI:
     #  +-----------------------+
@@ -176,6 +239,6 @@ def run_valuation_app():
     #  | info                  |
     #  +-----------------------+
     ui = widgets.VBox([instruction,
-                       studyarea_map,
+                       widgets.HBox([studyarea_map, fig_display]),
                        info])
     display(ui)
