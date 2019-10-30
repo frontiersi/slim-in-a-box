@@ -43,7 +43,7 @@ index-dlcd:
 	docker-compose exec jupyter bash -c \
 		"cd /opt/odc/scripts && python3 index-cogs-live.py \
 			test.data.frontiersi.io \
-			-p slim-odc-datasets/dlcd \
+			-p slim-odc-datasets/dlcd/ \
 			-e tif \
 			-t dlcd"
 
