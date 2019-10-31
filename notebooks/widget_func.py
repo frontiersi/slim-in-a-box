@@ -35,6 +35,31 @@ def transform_from_wgs_poly(geo_json,EPSGa):
 
     return polygon, eval(polygon.ExportToJson())
 
+
+def get_slope(dem, *resolution):
+    x, y = np.gradient(dem, *resolution)
+
+    slope = np.arctan(np.sqrt(x*x + y*y)) * 180 / np.pi
+    xr_slope = xr.full_like(dem, slope)
+    return xr_slope
+
+
+def slope_category(slope_degrees):
+    if np.isnan(slope_degrees):
+        return -1
+    if slope_degrees < 5:
+        return 0
+    if slope_degrees < 11:
+        return 1
+    if slope_degrees < 18:
+        return 2
+    if slope_degrees < 26:
+        return 3
+    if slope_degrees < 35:
+        return 4
+    return 5
+
+
 def run_valuation_app():
     """
     Description of function to come
@@ -160,9 +185,19 @@ def run_valuation_app():
                 invert=True
             )
             
+            # Calculate Slope category
+            slope = get_slope(ds_dem.band1.squeeze('time', drop=True), *dem_res).where(mask_dem)
+            slope_cat = xr.apply_ufunc(slope_category, slope, vectorize=True, dask='parallelized', output_dtypes=[int])
+            slope_cat_count = slope_cat.to_dataframe().band1.value_counts().rename('counts').to_frame()
+            slope_cat_count.index.name = 'index'
+            slope_cat_table = pd.read_csv('slope_cat.csv')
+            slope_coverage = pd.merge(slope_cat_count, slope_cat_table, how="left", left_on=['index'], right_on=['id'])
+            from IPython.core.display import display
+            display(slope_coverage)
             
             # Apply the mask to the loaded data
             masked_dem = ds_dem.band1.where(mask_dem)
+
             masked_dlcd = ds_dlcd.band1.where(mask_dlcd)
             
             # Compute the total number of pixels in the masked data set
@@ -172,6 +207,9 @@ def run_valuation_app():
             # Convert dlcd to pandas and get value counts for each class
             pd_dlcd = ds_dlcd.to_dataframe()
             pd_dlcd_classcount = pd_dlcd.band1.value_counts().reset_index(name='counts')
+            
+            # Convert slope_cat to pandas and get value counts for each category
+            pd_slope_cat_count = slope_cat.to_dataframe().band1.value_counts()
             
             # Join dlcd counts against landcover look up table
             pd_dlcd_coverage = pd.merge(pd_dlcd_classcount, dlcd_lookup, how="left", left_on=['index'], right_on=['id'])

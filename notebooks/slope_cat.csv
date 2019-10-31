@@ -1,0 +1,7 @@
+id,label,range
+0,Flat,(0 - 5)
+1,Undulating,(5 - 10)
+2,Easy Hill,(11 - 17)
+3,Medium Hill,(18 - 25)
+4,Steep Hill,(26 - 35)
+5,Very Steep,(> 35)
