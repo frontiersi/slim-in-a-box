@@ -35,6 +35,104 @@ def transform_from_wgs_poly(geo_json,EPSGa):
 
     return polygon, eval(polygon.ExportToJson())
 
+
+def get_slope(dem, *resolution):
+    x, y = np.gradient(dem, *resolution)
+
+    slope = np.arctan(np.sqrt(x*x + y*y)) * 180 / np.pi
+    xr_slope = xr.full_like(dem, slope)
+    return xr_slope
+
+
+def slope_category(slope_degrees):
+    if np.isnan(slope_degrees):
+        return np.nan
+    if slope_degrees < 5:
+        return 0
+    if slope_degrees < 11:
+        return 1
+    if slope_degrees < 18:
+        return 2
+    if slope_degrees < 26:
+        return 3
+    if slope_degrees < 35:
+        return 4
+    return 5
+
+
+def unique_counts(dataset):
+    stacked_array = dataset.to_array().values
+    flat_array = np.reshape(stacked_array, (stacked_array.shape[0], -1))
+
+    unique_keys, counts = np.unique(flat_array, axis=1, return_counts=True)
+    valid_keys = np.isfinite(unique_keys).all(axis=0)
+    unique_keys, counts = unique_keys[:, valid_keys].astype(np.int16), counts[valid_keys]
+
+    coords = {name: ('value', vals) for name, vals in zip(dataset, unique_keys)}
+    return xr.Dataset(data_vars={'count': ('value', counts)}, coords=coords)['count']
+
+
+def get_slope_raster(dc, x_range, y_range, inputcrs, resolution, geom_selectedarea):
+    ds_dem = dc.load(
+        product='dem',
+        x=x_range,
+        y=y_range,
+        crs=inputcrs,
+        output_crs=inputcrs,
+        resolution=resolution,
+        dask_chunks={'time': 1}
+    )
+
+    # Construct a mask to only select pixels within the drawn polygon
+    mask_dem = features.geometry_mask(
+        [geom_selectedarea for geoms in [geom_selectedarea]],
+        out_shape=ds_dem.geobox.shape,
+        transform=ds_dem.geobox.affine,
+        all_touched=False,
+        invert=True
+    )
+
+    # Calculate Slope category
+    slope = get_slope(ds_dem.band1.squeeze('time', drop=True), *resolution).where(mask_dem)
+    slope_cat = xr.apply_ufunc(slope_category, slope, vectorize=True, dask='parallelized', output_dtypes=[np.float32])
+    slope_cat.name = 'slope_category'
+
+    return slope_cat
+
+
+def get_dlcd_raster(dc, x_range, y_range, inputcrs, resolution, geom_selectedarea):
+    """
+
+    :param x_range: tuple() of x values
+    :param y_range: tuple of y values
+    :param inputcrs: crs of x and y values
+    :param resolution:
+    :param geom_selectedarea:
+    :return:
+    """
+    ds_dlcd = dc.load(
+        product='dlcdnsw',
+        x=x_range,
+        y=y_range,
+        crs=inputcrs,
+        output_crs=inputcrs,
+        resolution=resolution,
+        dask_chunks={'time': 1}
+    )
+
+    mask_dlcd = features.geometry_mask(
+        [geom_selectedarea for geoms in [geom_selectedarea]],
+        out_shape=ds_dlcd.geobox.shape,
+        transform=ds_dlcd.geobox.affine,
+        all_touched=False,
+        invert=True
+    )
+
+    masked_dlcd = ds_dlcd.band1.where(mask_dlcd)
+    masked_dlcd.name = 'dlcd'
+    return masked_dlcd
+
+
 def run_valuation_app():
     """
     Description of function to come
@@ -119,60 +217,32 @@ def run_valuation_app():
             inputcrs = "EPSG:3577"
             dem_res = (-5, 5)
             dlcd_res = (-100, 100)
-            
-            ds_dem = dc.load(
-                product='dem',
-                x=x_range,
-                y=y_range,
-                crs=inputcrs,
-                output_crs=inputcrs,
-                resolution=dem_res,
-                dask_chunks={'time': 1}
-            )
-            
-            ds_dlcd = dc.load(
-                product='dlcdnsw',
-                x=x_range,
-                y=y_range,
-                crs=inputcrs,
-                output_crs=inputcrs,
-                resolution=dlcd_res,
-                dask_chunks={'time': 1}
-            )
-            
-            # Load DLCD land cover look-up table
-            dlcd_lookup = pd.read_csv("dlcd.csv")
-            
-            # Construct a mask to only select pixels within the drawn polygon
-            mask_dem = features.geometry_mask(
-                [geom_selectedarea for geoms in [geom_selectedarea]],
-                out_shape=ds_dem.geobox.shape,
-                transform=ds_dem.geobox.affine,
-                all_touched=False,
-                invert=True
-            )
-            
-            mask_dlcd = features.geometry_mask(
-                [geom_selectedarea for geoms in [geom_selectedarea]],
-                out_shape=ds_dlcd.geobox.shape,
-                transform=ds_dlcd.geobox.affine,
-                all_touched=False,
-                invert=True
-            )
-            
-            
-            # Apply the mask to the loaded data
-            masked_dem = ds_dem.band1.where(mask_dem)
-            masked_dlcd = ds_dlcd.band1.where(mask_dlcd)
-            
+
+            slope_cat = get_slope_raster(dc, x_range, y_range, inputcrs, dem_res, geom_selectedarea)
+            dlcd = get_dlcd_raster(dc, x_range, y_range, inputcrs, dem_res, geom_selectedarea)
+
+            stacked = xr.merge([dlcd, slope_cat])
+            cross_counts = unique_counts(stacked)
+            display(cross_counts)
+
+            slope_cat_count = slope_cat.to_dataframe().slope_category.value_counts().rename('counts').to_frame()
+            slope_cat_count.index.name = 'index'
+            slope_cat_table = pd.read_csv('slope_cat.csv')
+            slope_coverage = pd.merge(slope_cat_count, slope_cat_table, how="left", left_on=['index'], right_on=['id'])
+
             # Compute the total number of pixels in the masked data set
-            pix_dem = masked_dem.count().compute().item()
-            pix_dlcd = masked_dlcd.count().compute().item()
+            pix_dlcd = dlcd.count().compute().item()
             
             # Convert dlcd to pandas and get value counts for each class
-            pd_dlcd = ds_dlcd.to_dataframe()
-            pd_dlcd_classcount = pd_dlcd.band1.value_counts().reset_index(name='counts')
+            pd_dlcd = dlcd.to_dataframe()
+            pd_dlcd_classcount = pd_dlcd.dlcd.value_counts().reset_index(name='counts')
             
+            # Convert slope_cat to pandas and get value counts for each category
+            # pd_slope_cat_count = slope_cat.to_dataframe().band1.value_counts()
+
+            # Load DLCD land cover look-up table
+            dlcd_lookup = pd.read_csv("dlcd.csv")
+
             # Join dlcd counts against landcover look up table
             pd_dlcd_coverage = pd.merge(pd_dlcd_classcount, dlcd_lookup, how="left", left_on=['index'], right_on=['id'])
             
