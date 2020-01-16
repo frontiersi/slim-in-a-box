@@ -278,7 +278,7 @@ def run_valuation_app():
             pd_cross_counts['area(km^2)'] = (
                 pd_cross_counts['count'] * (dem_res[1]/1000.)**2)
             pd_cross_counts['percentage_area'] = (
-                pd_cross_counts['count']/pd_cross_counts['count'].sum()*1000)
+                pd_cross_counts['count']/pd_cross_counts['count'].sum()*100)
 
             pd_cross_counts_output = (
                 pd_cross_counts[
