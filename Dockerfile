@@ -15,7 +15,7 @@ ENV SHELL="bash"
 RUN mkdir $HOME
 
 ADD https://raw.githubusercontent.com/jupyter/docker-stacks/master/base-notebook/fix-permissions /usr/local/bin/fix-permissions
-RUN chmod +x /usr/local/bin/fix-permissions 
+RUN chmod +x /usr/local/bin/fix-permissions
 # Create user with UID=1000 and in the 'users' group
 # and make sure these dirs are writable by the `users` group.
 RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER && \
@@ -27,6 +27,7 @@ RUN pip3 install matplotlib click scikit-image pep8 ruamel.yaml ipyleaflet
 # Adds CRS from WKT support to pyproj
 RUN pip3 install 'pyproj==2.4.0' --force-reinstall
 RUN pip3 install 'rasterio==1.1.0' --force-reinstall
+RUN pip3 install 'docutils==0.15.2' --force-reinstall
 
 USER $NB_UID
 
