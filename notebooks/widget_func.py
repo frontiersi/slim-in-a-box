@@ -315,7 +315,8 @@ def run_valuation_app():
 
             info.clear_output(wait=True)  # wait=True reduces flicker effect
             with info:
-                print(pd_cross_counts_output)
+                # use to_string function to avoid truncation of results
+                print(pd_cross_counts_output.to_string())
 
             # Iterate the polygon number before drawing another polygon
             polygon_number = polygon_number + 1
