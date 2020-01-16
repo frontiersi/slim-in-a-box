@@ -142,7 +142,7 @@ def run_valuation_app():
 
     # Update plotting functionality through rcParams
     mpl.rcParams.update({'figure.autolayout': True})
-    
+
     #Start the datacube
     dc = datacube.Datacube(app='dem')
 
@@ -184,7 +184,7 @@ def run_valuation_app():
     info = widgets.Output(layout={'border': '1px solid black'})
     with info:
         print("Plot status:")
-        
+
     fig_display = widgets.Output(layout=widgets.Layout(
         width="50%",  # proportion of horizontal space taken by plot
     ))
@@ -207,23 +207,26 @@ def run_valuation_app():
                 geo_json['geometry'],
                 EPSGa=3577  # hard-coded to be same as case-study data
             )
-            
+
             geom_envelope = geom_selectedarea_flat.GetEnvelope()
             minX, maxX, minY, maxY = geom_envelope
-            
+
             # Insert dc.load for dem and dlcdnsw
             x_range = (minX, maxX)
             y_range = (minY, maxY)
             inputcrs = "EPSG:3577"
             dem_res = (-5, 5)
-            dlcd_res = (-100, 100)
+            # dlcd_res is unused as the same res must be used when loading
+            # multiple products (to support the cross count process). The
+            # smallest cell size is used as this will provide the greatest
+            # accuracy.
+            dlcd_res = (-100, 100)  # unused
 
             slope_cat = get_slope_raster(dc, x_range, y_range, inputcrs, dem_res, geom_selectedarea)
             dlcd = get_dlcd_raster(dc, x_range, y_range, inputcrs, dem_res, geom_selectedarea)
 
             stacked = xr.merge([dlcd, slope_cat])
             cross_counts = unique_counts(stacked)
-            display(cross_counts)
 
             slope_cat_count = slope_cat.to_dataframe().slope_category.value_counts().rename('counts').to_frame()
             slope_cat_count.index.name = 'index'
@@ -232,11 +235,11 @@ def run_valuation_app():
 
             # Compute the total number of pixels in the masked data set
             pix_dlcd = dlcd.count().compute().item()
-            
+
             # Convert dlcd to pandas and get value counts for each class
             pd_dlcd = dlcd.to_dataframe()
             pd_dlcd_classcount = pd_dlcd.dlcd.value_counts().reset_index(name='counts')
-            
+
             # Convert slope_cat to pandas and get value counts for each category
             # pd_slope_cat_count = slope_cat.to_dataframe().band1.value_counts()
 
@@ -245,13 +248,44 @@ def run_valuation_app():
 
             # Join dlcd counts against landcover look up table
             pd_dlcd_coverage = pd.merge(pd_dlcd_classcount, dlcd_lookup, how="left", left_on=['index'], right_on=['id'])
-            
+
             # Format the counts table to keep necessary items
-            pd_dlcd_coverage['area(km^2)'] = pd_dlcd_coverage['counts'] * (dlcd_res[1]/1000.)**2
+            pd_dlcd_coverage['area(km^2)'] = pd_dlcd_coverage['counts'] * (dem_res[1]/1000.)**2
             pd_dlcd_coverage['percentage_area'] = pd_dlcd_coverage['counts']/pd_dlcd_coverage['counts'].sum()*100
-            
+
             pd_dlcd_output = pd_dlcd_coverage[['Name', 'area(km^2)', 'percentage_area']]
-            
+
+            # manipulate cross counts into format suitable for presentation as
+            # a table
+            pd_cross_counts = cross_counts.to_dataframe()
+            pd_cross_counts.sort_values(
+                by='count', ascending=False, inplace=True)
+            # join DLCD lookup table for DLCD class names
+            pd_cross_counts = pd.merge(
+                pd_cross_counts, dlcd_lookup, how='left', left_on=['dlcd'],
+                right_on=['id'])
+            pd_cross_counts = pd_cross_counts.rename(
+                columns={'dlcd': 'dlcd_id', 'Name': 'DLCD'})
+            # join slope category definition table for slope class names
+            pd_cross_counts = pd.merge(
+                pd_cross_counts, slope_cat_table, how='left',
+                left_on=['slope_category'], right_on=['id'])
+            pd_cross_counts['slope'] = (
+                pd_cross_counts[['label', 'range']].apply(
+                    lambda x: '{} {}'.format(x[0], x[1]), axis=1))
+
+            # Format the counts table to keep necessary items
+            pd_cross_counts['area(km^2)'] = (
+                pd_cross_counts['count'] * (dem_res[1]/1000.)**2)
+            pd_cross_counts['percentage_area'] = (
+                pd_cross_counts['count']/pd_cross_counts['count'].sum()*1000)
+
+            pd_cross_counts_output = (
+                pd_cross_counts[
+                    ['DLCD', 'slope', 'area(km^2)', 'percentage_area']])
+
+            # display(pd_cross_counts)
+
             colour = colour_list[polygon_number % len(colour_list)]
 
             # Add a layer to the map to make the most recently drawn polygon
@@ -267,21 +301,21 @@ def run_valuation_app():
                     }
                 )
             )
-            
+
             # Make the DLDC Summary plot
             ax.clear()
             pd_dlcd_output.plot.bar(x='Name', y='percentage_area', rot=45, ax=ax, legend=False, color=colour)
             ax.set_xlabel("Land Cover Class")
             ax.set_ylabel("Percentage Coverage Of Polygon")
-            
+
             # refresh display
             fig_display.clear_output(wait=True)  # wait=True reduces flicker effect
             with fig_display:
                 display(fig)
-            
+
             info.clear_output(wait=True)  # wait=True reduces flicker effect
             with info:
-                print(pd_dlcd_output)
+                print(pd_cross_counts_output)
 
             # Iterate the polygon number before drawing another polygon
             polygon_number = polygon_number + 1
@@ -294,7 +328,7 @@ def run_valuation_app():
 
     # call to say activate handle_draw function on draw
     studyarea_drawctrl.on_draw(handle_draw)
-    
+
     with fig_display:
         # TODO: update with user friendly something
         display(widgets.HTML(""))
